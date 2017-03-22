@@ -1,36 +1,65 @@
-var apiUrl = "https://www.omdbapi.com/",
-    $templates = $("template"),
-    $partialViewPlaceholder = $("#partial-view");
+var triviaQAs, roundNumber = 0,
+    currAns, rightAns, wrongAns, timer;
 
-var tempQs = ["Ans 0 lorem ipsum dolor sit amet, consectetur adipisicing elit. Nesciunt vel ullam nobis provident maxime, repellendus animi. Rem quo velit id, suscipit accusamus aliquid maxime tempore cumque deserunt, mollitia eligendi eum.",
-              "Ans 1 lorem ipsum dolor sit amet, consectetur adipisicing elit. Nesciunt vel ullam nobis provident maxime, repellendus animi. Rem quo velit id, suscipit accusamus aliquid maxime tempore cumque deserunt, mollitia eligendi eum.",
-              "Ans 2 lorem ipsum dolor sit amet, consectetur adipisicing elit. Nesciunt vel ullam nobis provident maxime, repellendus animi. Rem quo velit id, suscipit accusamus aliquid maxime tempore cumque deserunt, mollitia eligendi eum.",
-              "Ans 3 lorem ipsum dolor sit amet, consectetur adipisicing elit. Nesciunt vel ullam nobis provident maxime, repellendus animi. Rem quo velit id, suscipit accusamus aliquid maxime tempore cumque deserunt, mollitia eligendi eum."]
-
-
-function appendQButton(qNum, element) {
-    var tempElement = $("<button>");
-    tempElement.addClass("'btn btn-danger btn-block'");
-    tempElement.attr("id", "button" + qNum);
-    tempElement.text(tempQs[i]);
-    element.append(tempElement);
-}
-
-
-function loadQATemplate(e) {
-    var t = $templates.filter("#tmpl-QAs").html(),
-        a = $(t);
-    $partialViewPlaceholder.empty().append(a);
-    $("#question-text").text("How many otters does it take to change a lightbulb when there are seven moons around the planet Jupiter and both almonds speculate the rise and fall of the cornish hen?")
-
-    for (i = 0; i < 4; i++) {
-        appendQButton(i, a);
+function loadQARound(tObj) {
+    $("#d0").text(tObj.question);
+    correctAns = Math.floor(Math.random() * tObj.incorrect_answers.length + 1);
+    console.log("correctAns=", correctAns);
+    for (divId = 1, i = 0; i < tObj.incorrect_answers.length + 1; divId++, i++) {
+        if (divId - 1 === correctAns) {
+            $("#d" + divId).text(tObj.correct_answer);
+            i--;
+        } else {
+            $("#d" + divId).text(tObj.incorrect_answers[i]);
+        }
+        if (divId - 1 === correctAns) {$("#d" + i).text(tObj.correct_answer)}
     }
+    runTimer();
+    console.log(triviaQAs);
 }
 
-$(document).on("click", ".btn", function() {
-    console.log("future use, clicked ", this.id)
-})
+function runTimer() {
+    var timerSeconds = 3;
+    timer = setInterval(function() {
+            $("#dt").text("Seconds remaining: " + timerSeconds);
+            timerSeconds--;
+            if (timerSeconds <= 0) {
+                stopTimer();
+                $("#dt").text("Times up, please wait...");
+                setTimeout(function() {}, 3000);
+                $("#dt").css("style", "visibility:hidden");
+            }
+    });
+}
 
-var triviaQAs;
-$.ajax({ url: apiUrl }).done(loadQATemplate);
+function stopTimer() {
+    clearInterval(timer);
+}
+
+function gameOver() {
+    $("#b0").css("style", "visibility:visible");
+}
+
+function initializeGame() {
+    console.log("ready to initialize");
+    $.ajax({ url: "https://opentdb.com/api.php?amount=10" }).done(function(response) { 
+        console.log("response=", response);
+        triviaQAs = response.results;
+        console.log("triviaQAs =", triviaQAs);
+        console.log("triviaQAs[roundNumber] =", triviaQAs[roundNumber]);
+        loadQARound(triviaQAs[roundNumber]);
+    });
+    $("#b0").css("style", "display:hidden");
+    roundNumber = 0;
+    rightAns = 0;
+    wrongAns = 0;
+}
+
+$(document).on("click", ".d-a", function(response) {
+    console.log("arguments=", arguments);
+    console.log("this=", this);
+});
+
+$(document).on("click", "#b0", function() {
+            initializeGame();
+            });
