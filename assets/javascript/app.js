@@ -1,65 +1,93 @@
-var triviaQAs, roundNumber = 0,
-    currAns, rightAns, wrongAns, timer;
+var triviaQAs, correctAns, timer, rightAns, wrongAns, roundNumber = 0;
 
 function loadQARound(tObj) {
-    $("#d0").text(tObj.question);
-    correctAns = Math.floor(Math.random() * tObj.incorrect_answers.length + 1);
+    $("#d0").html(tObj.question);
+    if ((tObj.incorrect_answers.length + 1) > 4) {
+        alert("Program error -- too many incorrect_answers");
+        return;
+    }
+    correctAns = Math.floor(Math.random() * tObj.incorrect_answers.length + 1) + 1;
     console.log("correctAns=", correctAns);
-    for (divId = 1, i = 0; i < tObj.incorrect_answers.length + 1; divId++, i++) {
-        if (divId - 1 === correctAns) {
-            $("#d" + divId).text(tObj.correct_answer);
-            i--;
+    var wrongAns = 0;
+    for (divId = 1; divId <= 4; divId++) {
+        if (divId === correctAns) {
+            $("#d" + divId).html(tObj.correct_answer);
         } else {
-            $("#d" + divId).text(tObj.incorrect_answers[i]);
+            $("#d" + divId).html(tObj.incorrect_answers[wrongAns]);
+            wrongAns++;
         }
-        if (divId - 1 === correctAns) {$("#d" + i).text(tObj.correct_answer)}
     }
     runTimer();
-    console.log(triviaQAs);
 }
 
 function runTimer() {
-    var timerSeconds = 3;
+    var timerSeconds = 4;
+    $("#dt").attr("style", "display: block");
     timer = setInterval(function() {
-            $("#dt").text("Seconds remaining: " + timerSeconds);
+            $("#dt").html("Seconds remaining: " + timerSeconds);
             timerSeconds--;
-            if (timerSeconds <= 0) {
-                stopTimer();
-                $("#dt").text("Times up, please wait...");
-                setTimeout(function() {}, 3000);
-                $("#dt").css("style", "visibility:hidden");
-            }
-    });
+            if (timerSeconds < 0) {
+                clearInterval(timer);
+                var timesUp = setTimeout(function() {
+                    answerHandler("Times up, please wait...");
+                }, 3000);
+
+            };
+    }, 1000);
 }
 
-function stopTimer() {
-    clearInterval(timer);
-}
-
-function gameOver() {
-    $("#b0").css("style", "visibility:visible");
+function answerHandler(msg) {
+    $("#dt").html(msg);
+    if (msg.includes("Correct!")) {
+        rightAns++;
+    } else {
+        wrongAns++;
+        $("#d"+correctAns).attr("style", "background-color: yellow");
+    }
+    displayScore();
+    setTimeout(function(){}, 3000);
+    $("#d"+correctAns).attr("style", "");
 }
 
 function initializeGame() {
     console.log("ready to initialize");
-    $.ajax({ url: "https://opentdb.com/api.php?amount=10" }).done(function(response) { 
+    $.ajax({ url: "https://opentdb.com/api.php?amount=10&type=multiple" }).done(function(response) { 
         console.log("response=", response);
         triviaQAs = response.results;
         console.log("triviaQAs =", triviaQAs);
         console.log("triviaQAs[roundNumber] =", triviaQAs[roundNumber]);
         loadQARound(triviaQAs[roundNumber]);
     });
-    $("#b0").css("style", "display:hidden");
-    roundNumber = 0;
     rightAns = 0;
     wrongAns = 0;
 }
 
+function displayScore() {
+    $("#sp-score").html("Score: Right = " + rightAns + "; Wrong = " + wrongAns);
+}
+
 $(document).on("click", ".d-a", function(response) {
-    console.log("arguments=", arguments);
-    console.log("this=", this);
+    console.log("this.id=", this.id);
+    clearInterval(timer);
+    if (this.id === "d" + correctAns) {
+        console.log("correct");
+        answerHandler("Correct! Please wait...")
+    } else {
+        answerHandler("Oops, wrong, please wait...");
+    }
+    roundNumber++;
+    if (roundNumber > triviaQAs.length - 1) {
+        $("#dt").html("Game over, click Start<br>to play again.");
+        $("#b0").attr("style", "display:block");
+    } else {
+        setTimeout(loadQARound(triviaQAs[roundNumber]), 5000);
+    }
 });
 
-$(document).on("click", "#b0", function() {
-            initializeGame();
-            });
+function startReset() {
+    $("#b0").attr("style", "display:none");
+    initializeGame();
+    displayScore();
+}
+
+$(document).on("click", "#b0", function() {startReset()});

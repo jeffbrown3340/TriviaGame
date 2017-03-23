@@ -1,31 +1,16 @@
-.content {
-    padding: 75px 0 50px;
+* {
+    padding: 15px;
+    border-style: hidden;
+    font-weight: bold;
 }
 
-footer {
-    background-color: white;
-    text-align: center;
+.d-q {
+    background-color: green;
+    color: white;
 }
 
-footer hr {
-    margin: 0 0 10px;
-}
-
-.command {
-    cursor: pointer;
-}
-
-.thumbnail.movie-result a > img {
-    height: 200px;
-}
-
-.thumbnail.movie-result h4 {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-}
-
-.page-header small {
-    font-size: 15px;
-    display: block;
+.d-a:hover {
+    border-style: solid;
+    border-color: red;
+    border-width: 5px;
 }
