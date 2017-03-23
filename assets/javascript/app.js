@@ -21,17 +21,14 @@ function loadQARound(tObj) {
 }
 
 function runTimer() {
-    var timerSeconds = 4;
+    var timerSeconds = 10;
     $("#dt").attr("style", "display: block");
     timer = setInterval(function() {
             $("#dt").html("Seconds remaining: " + timerSeconds);
             timerSeconds--;
             if (timerSeconds < 0) {
                 clearInterval(timer);
-                var timesUp = setTimeout(function() {
-                    answerHandler("Times up, please wait...");
-                }, 3000);
-
+                answerHandler("Times up, please wait...");
             };
     }, 1000);
 }
@@ -52,10 +49,8 @@ function answerHandler(msg) {
 function initializeGame() {
     console.log("ready to initialize");
     $.ajax({ url: "https://opentdb.com/api.php?amount=10&type=multiple" }).done(function(response) { 
-        console.log("response=", response);
         triviaQAs = response.results;
-        console.log("triviaQAs =", triviaQAs);
-        console.log("triviaQAs[roundNumber] =", triviaQAs[roundNumber]);
+        console.log("triviaQAs.length=", triviaQAs.length);
         loadQARound(triviaQAs[roundNumber]);
     });
     rightAns = 0;
@@ -69,8 +64,7 @@ function displayScore() {
 $(document).on("click", ".d-a", function(response) {
     console.log("this.id=", this.id);
     clearInterval(timer);
-    if (this.id === "d" + correctAns) {
-        console.log("correct");
+    if (this.id === "d" + correctAns) {        
         answerHandler("Correct! Please wait...")
     } else {
         answerHandler("Oops, wrong, please wait...");
